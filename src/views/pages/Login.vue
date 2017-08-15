@@ -4,18 +4,19 @@
       <div class="row justify-content-center">
         <div class="col-md-8">
           <div class="card-group mb-0">
-            <validator name="test_validator">
             <div class="card p-4">
               <div class="card-block">
                 <h1>Login</h1>
                 <p class="text-muted">Sign In to your account</p>
                 <div class="input-group mb-3">
                   <span class="input-group-addon"><i class="icon-user"></i></span>
-                  <input type="text" class="form-control" placeholder="Username" v-model="userName" v-validataion="{val:userName,reg:'^1\\d{10}$',toptips:'必须为1开头且为数字的11位数'}">
+                  <input type="text" class="form-control" placeholder="Username" v-model="userName" v-verify="userName">
+                 <div style="color: red;line-height: 30px;"> <span>* </span>  <label v-remind="userName"></label></div>
                 </div>
                 <div class="input-group mb-4">
                   <span class="input-group-addon"><i class="icon-lock"></i></span>
-                  <input type="password" class="form-control" placeholder="Password" v-model="userPwd">
+                  <input type="password" class="form-control" placeholder="Password" v-model="userPwd" v-verify="userPwd">
+                  <div style="color: red;line-height: 30px;"> <span>* </span>  <label v-verified="$verify.$errors.userPwd"></label></div>
                 </div>
                 <div class="row">
                   <div class="col-6">
@@ -27,7 +28,6 @@
                 </div>
               </div>
             </div>
-            </validator>
             <div class="card card-inverse card-primary py-5 d-md-down-none" style="width:44%">
               <div class="card-block text-center">
                 <div>
@@ -72,6 +72,14 @@ export default {
     mounted: function () {
       this.checkLogin()
     },
+    verify: {
+      userName: ['required', 'max6'],
+      userPwd: ['required',
+        {
+          minLength: 6,
+          message: '密码不得小于6位'
+        }]
+    },
     methods: {
       checkLogin () {
         axios.get('/users/checkLogin').then(response => {
@@ -85,22 +93,22 @@ export default {
         })
       },
       login () {
-        if (!this.userName || !this.userPwd) {
-          return
+        console.log(this.$verify.check())
+        if (this.$verify.check()) {
+          axios.post('/users/login', {
+            userName: this.userName,
+            userPwd: this.userPwd
+          }).then(response => {
+            let res = response.data
+            if (res.status === '0') {
+              this.$router.push('/Dashboard')
+            } else {
+              this.infoModal = true
+            }
+          }).catch(function (error) {
+            console.log(error)
+          })
         }
-        axios.post('/users/login', {
-          userName: this.userName,
-          userPwd: this.userPwd
-        }).then(response => {
-          let res = response.data
-          if (res.status === '0') {
-            this.$router.push('/Dashboard')
-          } else {
-            this.infoModal = true
-          }
-        }).catch(function (error) {
-          console.log(error)
-        })
       }
     }
 }

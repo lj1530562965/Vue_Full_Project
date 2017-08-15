@@ -3,12 +3,25 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import Validator from 'vue-validator'
-Vue.use(Validator)
-// 添加一个密码验证
-// 匹配6-20位的任何字类字符，包括下划线。与“[A-Za-z0-9_]”等效。
-Vue.validator('passw', function (val) {
-  return /^(\w){6,20}$/.test(val)
+import verify from 'vue-verify-plugin'
+var myRules = {
+  max6: {
+    test: function (val) {
+      if (val.length > 6) {
+        return false
+      }
+      return true
+    },
+    message: '最大为6位'
+  },
+  phone: {
+    test: /^1[34578]\d{9}$/,
+    message: '电话号码格式不正确'
+  }
+}
+Vue.use(verify, {
+  rules: myRules, // 自定义验证方法
+  blur: true // 失去焦点时 是否开启验证
 })
 
 /* eslint-disable no-new */
